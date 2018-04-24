@@ -1,0 +1,146 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: False
+  become: yes
+  become_method: sudo
+
+  vars_files:
+    - vars.yaml
+    - secrets.yaml
+
+  tasks:
+  - name: ensure ssh is installed
+    apt:
+      name: openssh-server
+      state: present
+
+  - name: install required packages
+    apt: name="{{ item }}" state=present
+    with_items:
+      - htop
+      - tmux
+      - unzip
+      - zip
+      - apt-transport-https
+      - python-mysqldb
+      - redis-server
+      - letsencrypt
+
+  - name: fetch osquery key
+    apt_key:
+      keyserver: "{{ osquery_keyserver_url }}"
+      id: "{{ osquery_repo_key_id }}"
+      state: present
+
+  - name: add repo
+    apt_repository:
+      repo: "{{ osquery_repo_url }}"
+      state: present
+      filename: osquery
+      update_cache: yes
+
+  - name: apt update
+    apt: update_cache=yes
+
+  - name: install osquery
+    apt:
+      name: osquery
+      state: present
+
+  - name: download launcher binaries
+    get_url:
+      url:  "{{ launcher_url }}"
+      dest: /tmp/launcher.zip
+
+  - name: unpack launcher
+    unarchive:
+      src: /tmp/launcher.zip
+      dest: /tmp/
+      remote_src: yes
+
+  - name: copy osquery-extension into place
+    copy:
+      src: /tmp/linux/osquery-extension.ext
+      dest: /usr/local/bin/osquery-extension.ext
+      owner: root
+      group: root
+      mode: 750
+
+  - name: copy launcher into place
+    copy:
+      src: /tmp/linux/launcher
+      dest: /usr/local/bin/launcher
+      owner: root
+      group: root
+      mode: 750
+
+  - name: add entry to /etc/rc.local
+    lineinfile: dest="/etc/rc.local" line="{{item}}"
+    with_items:
+      - "/usr/local/bin/launcher --hostname={{ launcher_hostname }}.example.com:443 --enroll_secret_path=/var/osquery/enroll_secret --autoupdate --root_directory=/var/osquery > /dev/null 2>&1 &"
+
+  - name: install mysql
+    apt:
+      name: mysql-server
+      state: present
+
+  - name: Create local my.cnf for root user
+    template: src=my.cnf.j2 dest=/root/.my.cnf owner=root mode=0600
+
+  - name: start the mysql service
+    sudo: yes
+    service:
+      name: mysql
+      state: started
+      enabled: true
+
+  - name: ensure anonymous users are not in the database
+    mysql_user: name='' host={{ item }} state=absent
+    with_items:
+     - localhost
+
+  - name: remove the test database
+    mysql_db: name=test state=absent
+
+  - name: Create the database users
+    mysql_user: name={{ kolide_db_user }}  password={{ kolide_db_password }}
+                  priv={{ "kolide.*:ALL" }} state=present host={{ "localhost" }}
+
+  - name: create fleet database
+    mysql_db:
+      name: "{{ kolide_db }}"
+      state: present
+      login_host: 127.0.0.1
+      login_user: "{{ kolide_db_user }}"
+      login_password: "{{ kolide_db_password }}"
+
+  - name: Restart the MySQL service
+    action: service name=mysql state=restarted enabled=true
+
+  - name: download latest fleet binaries
+    get_url:
+      url: "{{ fleet_url }}"
+      dest: /tmp/fleet_latest.zip
+
+  - name: unpack fleet
+    unarchive:
+      src: /tmp/fleet_latest.zip
+      dest: /tmp/
+      remote_src: yes
+
+  - name: copy fleet into place
+    copy:
+      src: /tmp/linux/fleet_linux_amd64
+      dest: /usr/local/bin/fleet
+      owner: root
+      group: root
+      mode: 750
+
+  - name: add fleet config directory
+    file:
+      path: /etc/fleet
+      state: directory
+
+  - name: create local my.cnf for root user
+    template: src=fleet.yaml.j2 dest=/etc/fleet/fleet.yaml owner=root mode=0600

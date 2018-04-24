@@ -1,0 +1,25 @@
+mysql:
+  address: 127.0.0.1:3306
+  database: {{ kolide_db }}
+  username: {{ kolide_db_user}}
+  password: {{ kolide_db_password }}
+redis:
+  address: 127.0.0.1:6379
+server:
+  address: 0.0.0.0:443
+  cert: /etc/letsencrypt/live/{{ fleet_hostname }}.example.com/fullchain.pem
+  key: /etc/letsencrypt/live/{{ fleet_hostname }}.example.com/privkey.pem
+  tls: true
+  tls_compatibility: intermediate
+logging:
+  json: false
+  debug: true
+  disable_banner: true
+  logger_tls_period: 3600
+auth:
+  jwt_key: {{ kolide_jwt_key }}
+osquery:
+  status_log_file: /var/log/osquery/status.log
+  label_query_update_interval: 3h
+  enable_log_rotation: true
+  result_log_file: /var/log/osquery/result.log

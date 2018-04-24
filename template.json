@@ -1,0 +1,63 @@
+{
+  "variables": {
+      "aws_access_key": "",
+      "aws_secret_key": ""
+  },
+
+  "builders": [{
+    "type": "amazon-ebs",
+    "access_key": "{{user `aws_access_key`}}",
+    "secret_key": "{{user `aws_secret_key`}}",
+    "region": "eu-west-2",
+    "source_ami": "ami-996372fd",
+    "instance_type": "t2.medium",
+    "ssh_username": "ubuntu",
+    "ami_name": "Fleet-{{isotime | clean_ami_name}}",
+         "ami_description": "EC2 AMI Ubuntu 16.04",
+         "tags": {
+           "Owner": "Information Security",
+           "Name": "Fleet Server Image",
+           "Role": "Fleet_Server"
+         },
+         "run_tags": {
+           "Role": "Fleet Server"
+         }
+  }],
+
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "playbook.yaml",
+      "destination": "/home/ubuntu/playbook.yaml"
+    },
+
+    {
+      "type": "file",
+      "source": "vars.yaml",
+      "destination": "/home/ubuntu/vars.yaml"
+    },
+
+    {
+      "type": "file",
+      "source": "secrets.yaml",
+      "destination": "/home/ubuntu/secrets.yaml"
+    },
+
+    {
+      "type": "file",
+      "source": "my.cnf.j2",
+      "destination": "/home/ubuntu/my.cnf.j2"
+    },
+
+    {
+      "type": "file",
+      "source": "fleet.yaml.j2",
+      "destination": "/home/ubuntu/fleet.yaml.j2"
+    },
+
+    {
+      "type": "shell",
+      "script": "provision.sh"
+    }
+  ]
+}
