@@ -10,7 +10,7 @@ server:
   cert: /etc/letsencrypt/live/{{ fleet_hostname }}.example.com/fullchain.pem
   key: /etc/letsencrypt/live/{{ fleet_hostname }}.example.com/privkey.pem
   tls: true
-  tls_compatibility: intermediate
+  tls_compatibility: modern
 logging:
   json: false
   debug: true
