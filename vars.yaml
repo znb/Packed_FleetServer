@@ -1,8 +1,8 @@
-launcher_version: 0.5.0
-launcher_hostname: fleet
-launcher_url: https://github.com/kolide/launcher/releases/download/0.5.0/launcher_0.5.0.zip
-fleet_hostname: fleet
-fleet_url: https://dl.kolide.co/bin/fleet_latest.zip
-osquery_keyserver_url: keyserver.ubuntu.com
-osquery_repo_key_id: 1484120AC4E9F8A1A577AEEE97A80C63C9D8B80B
+launcher_version: "0.5.0"
+launcher_hostname: "fleet"
+launcher_url: "https://github.com/kolide/launcher/releases/download/0.5.0/launcher_0.5.0.zip"
+fleet_hostname: "fleet"
+fleet_url: "https://github.com/kolide/fleet/releases/download/2.0.1/fleet_2.0.1.zip"
+osquery_keyserver_url: "keyserver.ubuntu.com"
+osquery_repo_key_id: "1484120AC4E9F8A1A577AEEE97A80C63C9D8B80B"
 osquery_repo_url: "deb [arch=amd64] https://pkg.osquery.io/deb deb main"
