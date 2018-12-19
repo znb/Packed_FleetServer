@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+# dirty hack because linux
+sudo bash -c "sleep 120"
 sudo apt -q update
 echo "apt-get update done."
 sudo DEBIAN_FRONTEND=noninteractive apt -qy -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"  upgrade
