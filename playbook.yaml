@@ -10,22 +10,11 @@
     - secrets.yaml
 
   tasks:
-  - name: ensure ssh is installed
-    apt:
-      name: openssh-server
-      state: present
-
   - name: install required packages
-    apt: name="{{ item }}" state=present
-    with_items:
-      - htop
-      - tmux
-      - unzip
-      - zip
-      - apt-transport-https
-      - python-mysqldb
-      - redis-server
-      - letsencrypt
+    apt:
+     name: ['tmux', 'unzip', 'zip', 'htop', 'apt-transport-https',
+            'python-mysqldb', 'redis-server', 'letsencrypt']
+     state: present
 
   - name: fetch osquery key
     apt_key:
@@ -80,43 +69,8 @@
     with_items:
       - "/usr/local/bin/launcher --hostname={{ launcher_hostname }}.example.com:443 --enroll_secret_path=/var/osquery/enroll_secret --autoupdate --root_directory=/var/osquery > /dev/null 2>&1 &"
 
-  - name: install mysql
-    apt:
-      name: mysql-server
-      state: present
-
   - name: Create local my.cnf for root user
     template: src=my.cnf.j2 dest=/root/.my.cnf owner=root mode=0600
-
-  - name: start the mysql service
-    sudo: yes
-    service:
-      name: mysql
-      state: started
-      enabled: true
-
-  - name: ensure anonymous users are not in the database
-    mysql_user: name='' host={{ item }} state=absent
-    with_items:
-     - localhost
-
-  - name: remove the test database
-    mysql_db: name=test state=absent
-
-  - name: Create the database users
-    mysql_user: name={{ kolide_db_user }}  password={{ kolide_db_password }}
-                  priv={{ "kolide.*:ALL" }} state=present host={{ "localhost" }}
-
-  - name: create fleet database
-    mysql_db:
-      name: "{{ kolide_db }}"
-      state: present
-      login_host: 127.0.0.1
-      login_user: "{{ kolide_db_user }}"
-      login_password: "{{ kolide_db_password }}"
-
-  - name: Restart the MySQL service
-    action: service name=mysql state=restarted enabled=true
 
   - name: download latest fleet binaries
     get_url:
