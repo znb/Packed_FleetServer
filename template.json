@@ -13,7 +13,7 @@
     "instance_type": "t2.medium",
     "ssh_username": "ubuntu",
     "ami_name": "Fleet-{{isotime | clean_ami_name}}",
-         "ami_description": "EC2 AMI Ubuntu 16.04",
+         "ami_description": "EC2 AMI Ubuntu 18.04",
          "tags": {
            "Owner": "Information Security",
            "Name": "Fleet Server Image",
